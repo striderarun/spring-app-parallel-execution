@@ -41,7 +41,7 @@ public class DashboardServiceImpl implements DashboardService {
 	
 	@Override
 	public EmployeeDashboardBean fetchDashboardDetails(Integer employeeId) {
-		LOGGER.info("STARTING SERIAL EXECUTION");
+		LOGGER.info("------STARTING SERIAL EXECUTION-----");
 		long startTime = System.nanoTime();
 		EmployeeDashboardBean employeeDashboardBean = new EmployeeDashboardBean();
 		employeeDashboardBean.setCompensationDetails(employeeService.fetchCompensationDetails(employeeId));
@@ -57,7 +57,7 @@ public class DashboardServiceImpl implements DashboardService {
 	
 	@Override
 	public <T> EmployeeDashboardBean fetchDashboardDetailsParallel(Integer employeeId) {
-		LOGGER.info("STARTING PARALLEL EXECUTION");
+		LOGGER.info("------STARTING PARALLEL EXECUTION-----");
 		long startTime = System.nanoTime();
 		EmployeeDashboardBean employeeDashboardBean = new EmployeeDashboardBean();
 		

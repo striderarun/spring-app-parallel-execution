@@ -13,7 +13,11 @@ public class Client {
 	public static void main(String[] args) {
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
 		DashboardServiceImpl dashboardServiceImpl = ctx.getBean(DashboardServiceImpl.class);
-		EmployeeDashboardBean dashboardBean = dashboardServiceImpl.fetchDashboardDetails(100);
+
+		//Serial execution
+		dashboardServiceImpl.fetchDashboardDetails(100);
+
+		//Parallel execution
 		dashboardServiceImpl.fetchDashboardDetailsParallel(100);
 		
 	}
