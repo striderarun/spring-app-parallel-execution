@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,53 +63,24 @@ public class DashboardServiceImpl implements DashboardService {
 		LOGGER.info("------STARTING PARALLEL EXECUTION-----");
 		long startTime = System.nanoTime();
 		EmployeeDashboardBean employeeDashboardBean = new EmployeeDashboardBean();
-		
-		Map<Object, List<Signature>> executionMap = new HashMap<>();
-		List<Signature> employeeServiceSignatures = new ArrayList<>();
-		List<Signature> insuranceServiceSignatures = new ArrayList<>();
-		List<Signature> unitServiceSignatures = new ArrayList<>();
-
-		employeeServiceSignatures.add(Signature.method("fetchCompensationDetails")
-				.returnType(CompensationDetailsBean.class)
-				.argsList(Arrays.asList(100))
-				.argTypes(Arrays.asList(Integer.class))
-				.build());
-		
-		employeeServiceSignatures.add(Signature.method("fetchPersonalDetails")
-				.returnType(PersonalDetailsBean.class)
-				.argsList(Arrays.asList(100))
-				.argTypes(Arrays.asList(Integer.class))
-				.build());
-		
-		employeeServiceSignatures.add(Signature.method("fetchSkillDetails")
-				.returnType(SkillDetailsBean.class)
-				.argsList(Arrays.asList(100))
-				.argTypes(Arrays.asList(Integer.class))
-				.build());
-		
-		employeeServiceSignatures.add(Signature.method("fetchRoleDetails")
-				.returnType(RoleDetailsBean.class)
-				.argsList(Arrays.asList(100))
-				.argTypes(Arrays.asList(Integer.class))
-				.build());
-		
-		insuranceServiceSignatures.add(Signature.method("fetchInsuranceDetails")
-				.returnType(InsuranceDetailsBean.class)
-				.argsList(Arrays.asList(100))
-				.argTypes(Arrays.asList(Integer.class))
-				.build());
-		
-		unitServiceSignatures.add(Signature.method("fetchUnitDetails")
-				.returnType(UnitDetailsBean.class)
-				.argsList(Arrays.asList(100))
-				.argTypes(Arrays.asList(Integer.class))
-				.build());
-		
-		executionMap.put(employeeService, employeeServiceSignatures);
-		executionMap.put(insuranceService, insuranceServiceSignatures);
-		executionMap.put(unitService, unitServiceSignatures);
-		
-		List<T> results = ParallelProcessor.genericParallelExecutor(executionMap);
+		List<Object> result = Stream.<Callable>of(
+				() -> employeeService.fetchCompensationDetails(employeeId),
+				() -> employeeService.fetchPersonalDetails(employeeId),
+				() -> employeeService.fetchSkillDetails(employeeId),
+				() -> employeeService.fetchRoleDetails(employeeId),
+				() -> insuranceService.fetchInsuranceDetails(employeeId),
+				() -> unitService.fetchUnitDetails(employeeId)
+		).parallel()
+			.map(callable -> {
+				Object call = null;
+				try {
+					call = callable.call();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return call;
+			})
+			.collect(Collectors.toList());
 		long executionTime = (System.nanoTime() - startTime) / 1000000;
 		LOGGER.info("Total elapsed time is: " + executionTime);
 		return employeeDashboardBean;
